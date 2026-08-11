@@ -10,7 +10,11 @@ export const EMBEDDING_DIMENSIONS = 768;
 const EMBEDDING_MODEL = "gemini-embedding-001";
 
 export const llm = new ChatGoogleGenerativeAI({
-  model: "gemini-flash-latest",
+  // Pinned, not the "gemini-flash-latest" alias: that alias moved to
+  // gemini-3.6-flash, whose free tier allows only 20 requests PER DAY
+  // (quotaId GenerateRequestsPerDayPerProjectPerModel-FreeTier), which a demo
+  // exhausts in minutes. An alias can also change model behaviour under you.
+  model: "gemini-3.1-flash-lite",
   apiKey: API_KEY,
   temperature: 0.2,          // low = stick to the docs
   // gemini-flash-latest is a thinking model and its reasoning tokens are billed

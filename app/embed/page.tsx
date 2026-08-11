@@ -6,6 +6,9 @@ type Msg = { role: "user" | "assistant"; content: string; emergency?: boolean };
 
 const GREETING = "¡Hola! Soy el asistente de Cruz Roja. ¿En qué puedo ayudarte?";
 const CONNECTION_ERROR = "Hubo un problema de conexión. Llama al 55 5395 1111.";
+const BUSY_ERROR =
+  "El asistente está recibiendo muchas consultas en este momento. " +
+  "Intenta de nuevo en unos minutos o llámanos al 55 5395 1111.";
 
 function EmbedChat() {
   const params = useSearchParams();
@@ -39,11 +42,20 @@ function EmbedChat() {
       // An error status returns an HTML page, not JSON — parsing it would throw
       // and drop the user into the generic catch with no explanation.
       const d = await res.json().catch(() => null);
-      if (!res.ok || !d?.reply) throw new Error("bad response");
+
+      if (!res.ok || !d?.reply) {
+        // Keep the raw cause in the console: a Gemini quota 429 surfacing as
+        // "problema de conexión" is impossible to diagnose from the UI.
+        console.error("[embed] chat failed", res.status, d?.error ?? "(no body)");
+        const busy = res.status === 429 || /quota|rate limit/i.test(d?.error ?? "");
+        setMsgs((m) => [...m, { role: "assistant", content: busy ? BUSY_ERROR : CONNECTION_ERROR }]);
+        return;
+      }
 
       setConvId(d.conversationId);
       setMsgs((m) => [...m, { role: "assistant", content: d.reply, emergency: d.emergency }]);
-    } catch {
+    } catch (err) {
+      console.error("[embed] chat failed", err);
       setMsgs((m) => [...m, { role: "assistant", content: CONNECTION_ERROR }]);
     } finally {
       setLoading(false);
