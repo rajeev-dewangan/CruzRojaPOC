@@ -27,7 +27,7 @@ add_action(
 			'cruz-roja-chat',
 			CRUZ_ROJA_APP_URL . '/widget.js',
 			array(),  // no dependencies — plain ES5, no jQuery
-			'1.0.0',  // bump after changing widget.js so browsers and CDNs refetch
+			'1.1.0',  // bump after changing widget.js so browsers and CDNs refetch
 			true      // footer: the loader appends to document.body
 		);
 	}
